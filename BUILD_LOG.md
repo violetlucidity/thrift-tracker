@@ -66,3 +66,57 @@ These three notification types (plus the project label context, the runner integ
 **Notes:** Implemented SCRAPERS dict in scraper/__init__.py. Implemented runner.py with run_scrape(). Ntfy notify calls wrapped with graceful fallback if ntfy-monitor is not present. Verified: SCRAPERS=['vinted', 'depop', 'ebay', 'poshmark'], Runner OK.
 
 ---
+
+## Prompt 9 — Flask API
+**Status:** Completed
+**Commit:** `feat: Flask API`
+**Notes:** Implemented all routes: GET /, GET /static/<path>, GET /api/listings, POST /api/listings/reviewed, POST /api/scrape, GET /api/status. Uses threading.Event to prevent concurrent scrapes. CORS header added via after_request. Verified: API OK.
+
+---
+
+## Prompt 10 — Scheduler
+**Status:** Completed
+**Commit:** `feat: scheduler`
+**Notes:** Implemented BackgroundScheduler with CronTrigger in thrift_tracker/scheduler.py. Reads days_of_week/hour/minute from config. Verified: Scheduler OK.
+
+---
+
+## Prompt 11 — Entry point
+**Status:** Completed
+**Commit:** `feat: entry point`
+**Notes:** Implemented run.py with config.json loading, db.init_db(), scheduler.start_scheduler(), startup banner, and Flask app.run(). Syntax verified OK.
+
+---
+
+## Prompt 12 — Frontend HTML
+**Status:** Completed
+**Commit:** `feat: frontend HTML`
+**Notes:** Implemented static/index.html with header (title, Refresh, Run Scrape Now buttons), status bar, popup warning, listings container, empty state, sticky footer action bar, and script/style references.
+
+---
+
+## Prompt 13 — Frontend JavaScript
+**Status:** Completed
+**Commit:** `feat: frontend JavaScript`
+**Notes:** Implemented static/app.js with state management, fetchListings(), renderListings(), updateFooter(), openSelected(), markReviewed(), runScrape(), fetchStatus(), polling, and DOMContentLoaded wiring. JS syntax verified OK.
+
+---
+
+## Prompt 14 — Stylesheet
+**Status:** Completed
+**Commit:** `feat: stylesheet`
+**Notes:** Implemented static/style.css with full design spec: sticky header, grid layout, listing cards, selected state, action bar footer, responsive breakpoints, and all specified colors/typography.
+
+---
+
+## Prompt 15 — Integration checks and final polish
+**Status:** Completed
+**Commit:** `feat: integration checks, final polish, and README updates`
+**Notes:**
+- All four integration checks passed: DB OK, API OK, SCRAPERS=['vinted','depop','ebay','poshmark'], Runner OK.
+- static/index.html references to app.js and style.css verified correct.
+- All Python files have trailing newlines.
+- README already had Known Limitations section from Prompt 1.
+- No stray debug print() statements found.
+
+---
