@@ -31,3 +31,10 @@ These three notification types (plus the project label context, the runner integ
 **Notes:** Implemented BaseScraper ABC with launch_browser() and safe_text() helpers. Playwright installed. Import verified OK.
 
 ---
+
+## Prompt 4 — Vinted scraper
+**Status:** Completed
+**Commit:** `feat: Vinted scraper`
+**Notes:** Implemented VintedScraper using [data-testid="regular-item-cell"] selector (verified 2025-01-01). Handles cookie consent, extracts listing_id from URL path, title/size/price/image from card elements. Import verified OK.
+
+---
