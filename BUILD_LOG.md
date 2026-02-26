@@ -10,3 +10,10 @@
 These three notification types (plus the project label context, the runner integration, and the sibling-repo path assumption) form the notification requirements woven into the build.
 
 ---
+
+## Prompt 1 — Repository scaffold and dependencies
+**Status:** Completed
+**Commit:** `feat: initial repository scaffold`
+**Notes:** Created full directory structure, requirements.txt, .gitignore, config.json.example, README.md, and all empty placeholder files.
+
+---
