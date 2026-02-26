@@ -1,0 +1,283 @@
+/* =========================================================
+   Thrift Tracker — Stylesheet
+   Palette: #ffffff bg | #1a1a1a text | #2d6a4f accent |
+            #f0f4f2 card bg | #e63946 warning
+   ========================================================= */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #ffffff;
+  color: #1a1a1a;
+  min-height: 100vh;
+  padding-bottom: 70px; /* space for sticky footer */
+}
+
+/* ----------------------------------------------------------
+   Header
+   ---------------------------------------------------------- */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+}
+
+header h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2d6a4f;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ----------------------------------------------------------
+   Status bar
+   ---------------------------------------------------------- */
+#status-bar {
+  color: #777;
+  font-size: 0.8rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/* ----------------------------------------------------------
+   Popup warning banner
+   ---------------------------------------------------------- */
+#popup-warning {
+  background: #fff3cd;
+  border: 1px solid #ffe08a;
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+#popup-warning[hidden] {
+  display: none;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #555;
+  line-height: 1;
+}
+
+/* ----------------------------------------------------------
+   Listings grid
+   ---------------------------------------------------------- */
+#listings-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+}
+
+/* ----------------------------------------------------------
+   Listing card
+   ---------------------------------------------------------- */
+.listing-card {
+  background: #f0f4f2;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.listing-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+.listing-card.selected {
+  border-left: 4px solid #2d6a4f;
+}
+
+.listing-card > input[type="checkbox"] {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  cursor: pointer;
+  z-index: 1;
+}
+
+/* ----------------------------------------------------------
+   Listing image
+   ---------------------------------------------------------- */
+.listing-image img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+}
+
+.img-placeholder {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #dde8e3;
+  color: #888;
+  font-size: 0.8rem;
+}
+
+/* ----------------------------------------------------------
+   Listing info
+   ---------------------------------------------------------- */
+.listing-info {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.listing-info h3 {
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.listing-size,
+.listing-price {
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.listing-label {
+  font-size: 0.75rem;
+  color: #2d6a4f;
+  font-weight: 600;
+}
+
+.listing-info a {
+  font-size: 0.8rem;
+  color: #2d6a4f;
+  margin-top: auto;
+  text-decoration: none;
+}
+
+.listing-info a:hover {
+  text-decoration: underline;
+}
+
+/* ----------------------------------------------------------
+   Empty state
+   ---------------------------------------------------------- */
+#empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: #999;
+  font-size: 1rem;
+}
+
+#empty-state[hidden] {
+  display: none;
+}
+
+/* ----------------------------------------------------------
+   Action bar (footer)
+   ---------------------------------------------------------- */
+#action-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  z-index: 100;
+}
+
+#selected-count {
+  font-size: 0.85rem;
+  color: #555;
+}
+
+#action-bar div {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ----------------------------------------------------------
+   Buttons
+   ---------------------------------------------------------- */
+.btn-primary {
+  background: #2d6a4f;
+  color: #ffffff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.15s;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #245a41;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: #2d6a4f;
+  border: 1px solid #2d6a4f;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.15s;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #e9f5ef;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ----------------------------------------------------------
+   Responsive
+   ---------------------------------------------------------- */
+@media (max-width: 600px) {
+  #listings-container {
+    grid-template-columns: 1fr;
+  }
+
+  .header-actions {
+    flex-wrap: wrap;
+  }
+
+  .header-actions button {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.7rem;
+  }
+}
