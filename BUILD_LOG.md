@@ -17,3 +17,10 @@ These three notification types (plus the project label context, the runner integ
 **Notes:** Created full directory structure, requirements.txt, .gitignore, config.json.example, README.md, and all empty placeholder files.
 
 ---
+
+## Prompt 2 — Database layer
+**Status:** Completed
+**Commit:** `feat: database layer`
+**Notes:** Implemented thrift_tracker/db.py with sqlite3, init_db(), listing_exists(), insert_listing(), get_new_listings(), mark_reviewed(), log_run(), get_last_run(). Self-test passed: DB OK.
+
+---
