@@ -38,3 +38,31 @@ These three notification types (plus the project label context, the runner integ
 **Notes:** Implemented VintedScraper using [data-testid="regular-item-cell"] selector (verified 2025-01-01). Handles cookie consent, extracts listing_id from URL path, title/size/price/image from card elements. Import verified OK.
 
 ---
+
+## Prompt 5 — Depop scraper
+**Status:** Completed
+**Commit:** `feat: Depop scraper`
+**Notes:** Implemented DepopScraper. Uses li/article product card selectors (verified 2025-01-01). Handles cookie overlay, extracts path slug as listing_id. Import verified OK.
+
+---
+
+## Prompt 6 — eBay scraper
+**Status:** Completed
+**Commit:** `feat: eBay scraper`
+**Notes:** Implemented EbayScraper using li.s-item selector (verified 2025-01-01). Strips "New Listing" prefix, skips "Shop on eBay" promoted placeholder, strips tracking query params. Import verified OK.
+
+---
+
+## Prompt 7 — Poshmark scraper
+**Status:** Completed
+**Commit:** `feat: Poshmark scraper`
+**Notes:** Implemented PoshmarkScraper using div[data-et-name="listing"] selector (verified 2025-01-01). Detects login modal and returns [] with warning. Import verified OK.
+
+---
+
+## Prompt 8 — Scraper registry and run orchestration
+**Status:** Completed
+**Commit:** `feat: scraper registry, run orchestration, and ntfy notifications`
+**Notes:** Implemented SCRAPERS dict in scraper/__init__.py. Implemented runner.py with run_scrape(). Ntfy notify calls wrapped with graceful fallback if ntfy-monitor is not present. Verified: SCRAPERS=['vinted', 'depop', 'ebay', 'poshmark'], Runner OK.
+
+---
