@@ -1,0 +1,30 @@
+{
+  "searches": [
+    {
+      "label": "Levi 501 W28",
+      "url": "https://www.vinted.co.uk/catalog?search_text=levi+501&size_ids[]=1234",
+      "site": "vinted"
+    },
+    {
+      "label": "Vintage Carhartt Jacket M",
+      "url": "https://www.depop.com/search/?q=carhartt+vintage+jacket&size=M",
+      "site": "depop"
+    },
+    {
+      "label": "Levi 501 eBay",
+      "url": "https://www.ebay.co.uk/sch/i.html?_nkw=levi+501+w28",
+      "site": "ebay"
+    },
+    {
+      "label": "Carhartt Poshmark",
+      "url": "https://poshmark.com/search?query=carhartt+jacket&size%5B%5D=M&category=Men",
+      "site": "poshmark"
+    }
+  ],
+  "schedule": {
+    "days_of_week": ["tue", "fri"],
+    "hour": 8,
+    "minute": 0
+  },
+  "max_age_days": 30
+}
