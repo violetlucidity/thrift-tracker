@@ -24,3 +24,10 @@ These three notification types (plus the project label context, the runner integ
 **Notes:** Implemented thrift_tracker/db.py with sqlite3, init_db(), listing_exists(), insert_listing(), get_new_listings(), mark_reviewed(), log_run(), get_last_run(). Self-test passed: DB OK.
 
 ---
+
+## Prompt 3 — Scraper base class
+**Status:** Completed
+**Commit:** `feat: scraper base class`
+**Notes:** Implemented BaseScraper ABC with launch_browser() and safe_text() helpers. Playwright installed. Import verified OK.
+
+---
