@@ -1,0 +1,54 @@
+# searches.txt — Thrift Tracker URL import list
+#
+# HOW TO USE:
+#   1. Copy this file:  cp searches.txt.example searches.txt
+#   2. Replace the example URLs below with your real search URLs.
+#      Paste directly from your browser's address bar.
+#   3. Run:  python import_links.py searches.txt
+#            py     import_links.py searches.txt   (Windows)
+#
+# FORMAT RULES:
+#   [site_name]       starts a section.  Must be one of:
+#                     vinted | depop | ebay | poshmark
+#
+#   <url>             one URL per line — a label is auto-generated
+#                     from the search query in the URL.
+#
+#   <url> | <label>   URL followed by a pipe and a custom label.
+#                     Use this to give a search a friendly name.
+#
+#   # comment         lines starting with # are ignored.
+#   (blank lines)     also ignored.
+#
+# FIREFOX SHORTCUT:
+#   Instead of a TXT file you can export your bookmarks from Firefox
+#   and point the script at the HTML file:
+#
+#     python import_links.py --firefox ~/bookmarks.html
+#     python import_links.py --firefox ~/bookmarks.html --folder "Thrift Searches"
+#
+#   To export from Firefox:
+#     Ctrl+Shift+B  →  Import and Backup  →  Export Bookmarks to HTML
+# -----------------------------------------------------------------------
+
+
+[vinted]
+https://www.vinted.co.uk/catalog?search_text=levi+501&size_ids[]=1234 | Levi 501 W28 Vinted
+https://www.vinted.co.uk/catalog?search_text=carhartt+jacket | Carhartt Jacket Vinted
+# Add more Vinted search URLs here…
+
+
+[depop]
+https://www.depop.com/search/?q=carhartt+vintage+jacket&size=M | Vintage Carhartt M Depop
+# Add more Depop search URLs here…
+
+
+[ebay]
+https://www.ebay.co.uk/sch/i.html?_nkw=levi+501+w28 | Levi 501 eBay
+https://www.ebay.co.uk/sch/i.html?_nkw=carhartt+jacket+m | Carhartt Jacket M eBay
+# Add more eBay search URLs here…
+
+
+[poshmark]
+https://poshmark.com/search?query=carhartt+jacket&size%5B%5D=M&category=Men | Carhartt M Poshmark
+# Add more Poshmark search URLs here…
