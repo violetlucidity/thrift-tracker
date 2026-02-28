@@ -98,6 +98,8 @@ Headings are cosmetic — site is always derived from the URL domain. After edit
 
 Duplicates (URLs already in `config.json`) are skipped automatically. After each import `config.json` is re-sorted: vinted → depop → ebay → poshmark.
 
+> **Note:** `thrift-links.txt` is listed in `.gitignore` (it is personal, like `config.json`). It is created automatically the first time the Firefox extension saves a URL, or when you run `--convert`. You can also create it by hand.
+
 ## Firefox Extension
 
 The extension lets you save the URL of whatever search page you're looking at to `thrift-links.txt` with a single click — no copying, no switching windows.
@@ -124,6 +126,8 @@ The Thrift Tracker icon will appear in your toolbar.
 python import_links.py thrift-links.txt
 py     import_links.py thrift-links.txt   # Windows
 ```
+
+The extension communicates with the running app via `POST /api/save-link` on `http://127.0.0.1:5000`. The server detects the site from the URL domain and appends the URL to `thrift-links.txt` under the correct `[site]` heading, creating the file if it doesn't exist yet. Thrift Tracker must be running for the extension to work.
 
 ## How the Scheduler Works
 
