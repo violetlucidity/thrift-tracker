@@ -33,15 +33,19 @@ All 15 prompts from `claude-thrift-tracker.md` have been completed successfully.
 
 ```
 python -c "from thrift_tracker import db; db.init_db(); print('DB OK')"
+py     -c "from thrift_tracker import db; db.init_db(); print('DB OK')"
 → DB OK ✅
 
 python -c "from thrift_tracker.api import app; print('API OK')"
+py     -c "from thrift_tracker.api import app; print('API OK')"
 → API OK ✅
 
 python -c "from thrift_tracker.scraper import SCRAPERS; print(list(SCRAPERS.keys()))"
+py     -c "from thrift_tracker.scraper import SCRAPERS; print(list(SCRAPERS.keys()))"
 → ['vinted', 'depop', 'ebay', 'poshmark'] ✅
 
 python -c "from thrift_tracker import runner; print('Runner OK')"
+py     -c "from thrift_tracker import runner; print('Runner OK')"
 → Runner OK ✅
 ```
 
@@ -92,5 +96,7 @@ BUILD_STATUS.md
 ## Next Steps for User
 
 1. `cp config.json.example config.json` — then open `config.json` and replace the example URLs with actual bookmarked search URLs.
-2. `playwright install chromium` — if not already installed.
-3. `python run.py` — then open `http://127.0.0.1:5000` and click **Run Scrape Now** to populate the initial listing set.
+   - Or use `python import_links.py searches.txt` / `py import_links.py searches.txt` to bulk-import from a text file.
+   - Or use `python import_links.py --firefox bookmarks.html` / `py import_links.py --firefox bookmarks.html` to import directly from Firefox.
+2. `playwright install chromium` / `py -m playwright install chromium` — if not already installed.
+3. `python run.py` / `py run.py` — then open `http://127.0.0.1:5000` and click **Run Scrape Now** to populate the initial listing set.

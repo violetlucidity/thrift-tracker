@@ -13,13 +13,24 @@ Thrift Tracker is a locally-run web application that periodically scrapes a user
 
 ```bash
 pip install -r requirements.txt
+# Windows alternative:
+py -m pip install -r requirements.txt
+
 playwright install chromium
+# Windows alternative:
+py -m playwright install chromium
+
 cp config.json.example config.json
 # Edit config.json with your own search URLs and preferred schedule
+
 python run.py
+# Windows alternative:
+py run.py
 ```
 
 Then open [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser.
+
+> **Note on `py`:** `py` is the [Python Launcher for Windows](https://docs.python.org/3/using/windows.html#launcher). On macOS/Linux use `python3` (or `python` if your environment defaults to Python 3).
 
 ## Configuring config.json
 
@@ -38,6 +49,62 @@ The `schedule` block controls when automatic scrapes run:
 - `days_of_week`: list of 3-letter day abbreviations (e.g. `["tue", "fri"]`)
 - `hour` and `minute`: time of day in UTC
 - `max_age_days`: listings older than this are hidden from the UI
+
+### Bulk-importing URLs with import_links.py
+
+Instead of editing `config.json` by hand, you can keep a plain-text list of search URLs and import them in one step.
+
+**1. Create your URL list** (see `searches.txt.example` for the full format):
+
+```
+[vinted]
+https://www.vinted.co.uk/catalog?search_text=levi+501 | Levi 501 W28
+
+[ebay]
+https://www.ebay.co.uk/sch/i.html?_nkw=levi+501+w28 | Levi 501 eBay
+```
+
+**2. Run the importer:**
+
+```bash
+python import_links.py searches.txt
+# Windows alternative:
+py import_links.py searches.txt
+```
+
+Duplicates (matching URLs already in `config.json`) are skipped automatically.
+
+**Importing from Firefox bookmarks** — see [Importing from Firefox](#importing-from-firefox) below.
+
+## Importing from Firefox
+
+You can export your Firefox bookmarks and point `import_links.py` directly at the HTML file — no copying URLs one by one.
+
+### Step 1 — Export bookmarks from Firefox
+
+1. Press **Ctrl+Shift+B** (Windows/Linux) or **Cmd+Shift+B** (macOS) to open the Library.
+2. Click **Import and Backup → Export Bookmarks to HTML…**
+3. Save the file somewhere accessible, e.g. `~/bookmarks.html`.
+
+> **Tip:** Put all your thrift-search bookmarks in a dedicated Firefox folder first (e.g. "Thrift Searches") so you can import just that folder.
+
+### Step 2 — Run the importer
+
+Import all bookmarks whose domains match a known site (Vinted, Depop, eBay, Poshmark):
+
+```bash
+python import_links.py --firefox ~/bookmarks.html
+py import_links.py --firefox ~/bookmarks.html
+```
+
+Or restrict to a specific Firefox folder:
+
+```bash
+python import_links.py --firefox ~/bookmarks.html --folder "Thrift Searches"
+py import_links.py --firefox ~/bookmarks.html --folder "Thrift Searches"
+```
+
+The bookmark title becomes the label. Sites are auto-detected from the URL domain.
 
 ## How the Scheduler Works
 
