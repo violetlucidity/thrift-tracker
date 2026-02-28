@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thrift Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Thrift Tracker</h1>
+    <div class="header-actions">
+      <button class="btn-secondary" onclick="fetchListings()">Refresh</button>
+      <button class="btn-primary" onclick="runScrape()">Run Scrape Now</button>
+    </div>
+  </header>
+
+  <div id="status-bar">Loading status…</div>
+
+  <div id="popup-warning" hidden>
+    <span>Allow popups for localhost to open multiple tabs at once.</span>
+    <button class="close-btn" id="btn-close-warning">&times;</button>
+  </div>
+
+  <main id="listings-container"></main>
+
+  <div id="empty-state" hidden>No new listings. Run a scrape to check for updates.</div>
+
+  <footer id="action-bar">
+    <span id="selected-count">0 selected</span>
+    <div>
+      <button class="btn-secondary" id="btn-open" disabled onclick="openSelected()">Open Selected</button>
+      <button class="btn-primary" id="btn-reviewed" disabled onclick="markReviewed()">Mark Reviewed</button>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
