@@ -34,9 +34,8 @@ Then open [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser.
 
 ## Configuring config.json
 
-For each saved search, paste the full URL from your browser address bar and set the `site` field to one of: `vinted`, `depop`, `ebay`, `poshmark`.
+The recommended way to populate `config.json` is via `thrift-links.txt` and the importer — see below. You can also edit it directly; each entry needs a `label`, `url`, and `site`:
 
-Example entry:
 ```json
 {
   "label": "Levi 501 W28",
@@ -50,61 +49,81 @@ The `schedule` block controls when automatic scrapes run:
 - `hour` and `minute`: time of day in UTC
 - `max_age_days`: listings older than this are hidden from the UI
 
-### Bulk-importing URLs with import_links.py
+## Adding Search URLs
 
-Instead of editing `config.json` by hand, you can keep a plain-text list of search URLs and import them in one step.
+The cleanest workflow uses `thrift-links.txt` as a personal inbox and `import_links.py` to push those URLs into `config.json`. Site is always auto-detected from the URL domain — you never need to label it yourself.
 
-**1. Create your URL list** (see `searches.txt.example` for the full format):
+### Option A — Firefox extension (one click per page)
+
+Install the extension from the `firefox-extension/` folder (see [Firefox Extension](#firefox-extension) below). While Thrift Tracker is running, click the toolbar button on any search results page to save that URL directly to `thrift-links.txt`.
+
+Then import whenever you're ready:
+
+```bash
+python import_links.py thrift-links.txt
+py     import_links.py thrift-links.txt   # Windows
+```
+
+### Option B — Convert a Firefox bookmarks export
+
+1. Press **Ctrl+Shift+B** → **Import and Backup → Export Bookmarks to HTML…**
+2. Save the file (e.g. `bookmarks.html`).
+3. Convert and strip all HTML cruft to a clean URL list:
+
+```bash
+python import_links.py --convert bookmarks.html
+py     import_links.py --convert bookmarks.html   # Windows
+```
+
+This writes `thrift-links.txt` with only the URLs for known sites, grouped by site. Review it, then import:
+
+```bash
+python import_links.py thrift-links.txt
+py     import_links.py thrift-links.txt   # Windows
+```
+
+### Option C — Edit thrift-links.txt manually
+
+`thrift-links.txt` is a plain text file — one URL per line, with optional `[site]` headings for readability:
 
 ```
 [vinted]
-https://www.vinted.co.uk/catalog?search_text=levi+501 | Levi 501 W28
+https://www.vinted.co.uk/catalog?search_text=levi+501
 
 [ebay]
-https://www.ebay.co.uk/sch/i.html?_nkw=levi+501+w28 | Levi 501 eBay
+https://www.ebay.co.uk/sch/i.html?_nkw=levi+501+w28
 ```
 
-**2. Run the importer:**
+Headings are cosmetic — site is always derived from the URL domain. After editing, run the importer as above.
+
+Duplicates (URLs already in `config.json`) are skipped automatically. After each import `config.json` is re-sorted: vinted → depop → ebay → poshmark.
+
+## Firefox Extension
+
+The extension lets you save the URL of whatever search page you're looking at to `thrift-links.txt` with a single click — no copying, no switching windows.
+
+### Install
+
+1. Open Firefox and go to `about:debugging`.
+2. Click **This Firefox** → **Load Temporary Add-on…**
+3. Navigate to the `firefox-extension/` folder and select `manifest.json`.
+
+The Thrift Tracker icon will appear in your toolbar.
+
+> **Note:** "Temporary add-on" means it is unloaded when Firefox restarts. To make it permanent, package the folder as a `.zip` and sign it via [addons.mozilla.org](https://addons.mozilla.org/developers/), or use Firefox Developer Edition / Nightly with `xpinstall.signatures.required` set to `false` in `about:config`.
+
+### Use
+
+1. Make sure Thrift Tracker is running (`python run.py` / `py run.py`).
+2. Navigate to a search results page on Vinted, Depop, eBay, or Poshmark.
+3. Click the Thrift Tracker toolbar button.
+4. The extension shows the detected site. Click **Save to thrift-links.txt**.
+5. When you're ready to pull saved URLs into config.json:
 
 ```bash
-python import_links.py searches.txt
-# Windows alternative:
-py import_links.py searches.txt
+python import_links.py thrift-links.txt
+py     import_links.py thrift-links.txt   # Windows
 ```
-
-Duplicates (matching URLs already in `config.json`) are skipped automatically.
-
-**Importing from Firefox bookmarks** — see [Importing from Firefox](#importing-from-firefox) below.
-
-## Importing from Firefox
-
-You can export your Firefox bookmarks and point `import_links.py` directly at the HTML file — no copying URLs one by one.
-
-### Step 1 — Export bookmarks from Firefox
-
-1. Press **Ctrl+Shift+B** (Windows/Linux) or **Cmd+Shift+B** (macOS) to open the Library.
-2. Click **Import and Backup → Export Bookmarks to HTML…**
-3. Save the file somewhere accessible, e.g. `~/bookmarks.html`.
-
-> **Tip:** Put all your thrift-search bookmarks in a dedicated Firefox folder first (e.g. "Thrift Searches") so you can import just that folder.
-
-### Step 2 — Run the importer
-
-Import all bookmarks whose domains match a known site (Vinted, Depop, eBay, Poshmark):
-
-```bash
-python import_links.py --firefox ~/bookmarks.html
-py import_links.py --firefox ~/bookmarks.html
-```
-
-Or restrict to a specific Firefox folder:
-
-```bash
-python import_links.py --firefox ~/bookmarks.html --folder "Thrift Searches"
-py import_links.py --firefox ~/bookmarks.html --folder "Thrift Searches"
-```
-
-The bookmark title becomes the label. Sites are auto-detected from the URL domain.
 
 ## How the Scheduler Works
 
