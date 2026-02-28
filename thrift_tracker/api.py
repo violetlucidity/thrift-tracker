@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 import threading
 from pathlib import Path
 
@@ -7,6 +8,12 @@ from flask import Flask, jsonify, request, send_from_directory
 
 from thrift_tracker import db
 from thrift_tracker import runner
+
+# import_links.py lives at the repo root — pull in shared helpers
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from import_links import detect_site, append_to_thrift_links  # noqa: E402
+
+_LINKS_PATH = Path(__file__).parent.parent / "thrift-links.txt"
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -90,3 +97,34 @@ def start_scrape():
 def status():
     last_run = db.get_last_run()
     return jsonify({"last_run": last_run})
+
+
+@app.route("/api/save-link", methods=["POST", "OPTIONS"])
+def save_link():
+    """Append a URL to thrift-links.txt under its auto-detected [site] heading.
+
+    Called by the Thrift Tracker Firefox extension.
+    Body: {"url": "https://..."}
+    Returns: {"ok": true, "site": "vinted"} or {"ok": false, "error": "..."}
+    """
+    if request.method == "OPTIONS":
+        # CORS preflight
+        return "", 204
+
+    data = request.get_json(force=True) or {}
+    url = data.get("url", "").strip()
+
+    if not url:
+        return jsonify({"ok": False, "error": "No URL provided."}), 400
+
+    site = detect_site(url)
+    if not site:
+        return jsonify({
+            "ok": False,
+            "error": "Domain not recognised — not a supported site.",
+        }), 400
+
+    written = append_to_thrift_links(_LINKS_PATH, url, site)
+    if written:
+        return jsonify({"ok": True, "site": site})
+    return jsonify({"ok": False, "error": "URL already in thrift-links.txt."}), 409

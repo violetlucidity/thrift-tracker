@@ -2,30 +2,39 @@
 """
 import_links.py — Bulk-import search URLs into config.json
 
-Usage:
-    python import_links.py searches.txt
-    py     import_links.py searches.txt                          # Windows
+WORKFLOW
+--------
+  Option A — convert a Firefox bookmarks HTML export to thrift-links.txt,
+             then import from that clean file:
 
-    python import_links.py searches.txt --config /path/to/config.json
+      python import_links.py --convert bookmarks.html
+      python import_links.py thrift-links.txt
 
-    # Import from a Firefox bookmarks HTML export:
-    python import_links.py --firefox ~/bookmarks.html
-    python import_links.py --firefox ~/bookmarks.html --folder "Thrift Searches"
+  Option B — import a thrift-links.txt file you have built manually
+             or that the Firefox extension has been appending to:
 
-TXT format (see searches.txt.example):
-    [site_name]                   start a section; site must be one of:
-                                  vinted | depop | ebay | poshmark
-    <url>                         one URL per line — label auto-generated
-    <url> | <label>               URL with a custom label
-    # comment                     ignored
-    (blank lines ignored)
+      python import_links.py thrift-links.txt
+      py     import_links.py thrift-links.txt          # Windows
 
-Firefox format:
-    Export from Firefox → Library (Ctrl+Shift+B) →
-    Import and Backup → Export Bookmarks to HTML.
-    Pass the .html file with --firefox.
-    Use --folder to limit import to one bookmark folder (recommended).
-    Site is auto-detected from the URL domain.
+THRIFT-LINKS.TXT FORMAT
+------------------------
+  Plain URLs, one per line, grouped under [site] headings.
+  [site] headings are optional — site is always auto-detected from the URL
+  domain, so headings are just for human readability.
+
+      [vinted]
+      https://www.vinted.co.uk/catalog?search_text=levi+501
+
+      [ebay]
+      https://www.ebay.com/sch/i.html?_nkw=calvin+klein+sweater
+
+  Lines starting with # and blank lines are ignored.
+  Duplicate URLs (already in config.json) are skipped automatically.
+
+CONFIG.JSON
+-----------
+  After import, entries in config.json are sorted by site:
+  vinted → depop → ebay → poshmark.
 """
 
 import argparse
@@ -37,7 +46,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 # ---------------------------------------------------------------------------
-# Site auto-detection from URL domain
+# Site detection
 # ---------------------------------------------------------------------------
 
 DOMAIN_TO_SITE = {
@@ -56,15 +65,20 @@ DOMAIN_TO_SITE = {
     "poshmark.com": "poshmark",
 }
 
-KNOWN_SITES = {"vinted", "depop", "ebay", "poshmark"}
+# Canonical display order in config.json
+SITE_ORDER = ["vinted", "depop", "ebay", "poshmark"]
+KNOWN_SITES = set(SITE_ORDER)
 
 
 def detect_site(url: str) -> str | None:
     """Return site name inferred from the URL domain, or None."""
-    host = urlparse(url).netloc.lower()
-    if host.startswith("www."):
-        host = host[4:]
-    return DOMAIN_TO_SITE.get(host)
+    try:
+        host = urlparse(url).netloc.lower()
+        if host.startswith("www."):
+            host = host[4:]
+        return DOMAIN_TO_SITE.get(host)
+    except Exception:
+        return None
 
 
 def auto_label(url: str, site: str) -> str:
@@ -79,128 +93,152 @@ def auto_label(url: str, site: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# TXT file parser
+# thrift-links.txt parser
 # ---------------------------------------------------------------------------
 
 def parse_txt(path: Path) -> list[dict]:
-    """Parse a searches TXT file into a list of search-config dicts."""
-    entries = []
-    current_site = None
+    """Parse a thrift-links.txt file.
 
+    Site is always determined by URL domain — [headings] are cosmetic only.
+    """
+    entries = []
     for lineno, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
         line = raw.strip()
         if not line or line.startswith("#"):
             continue
-
-        # Section heading: [site_name]
-        m = re.fullmatch(r"\[([^\]]+)\]", line)
-        if m:
-            site = m.group(1).strip().lower()
-            if site not in KNOWN_SITES:
-                print(
-                    f"  Line {lineno}: unknown site '{site}' "
-                    f"(expected one of {sorted(KNOWN_SITES)}) — skipping section.",
-                    file=sys.stderr,
-                )
-                current_site = None
-            else:
-                current_site = site
+        # Skip [heading] lines — site comes from the URL
+        if re.fullmatch(r"\[[^\]]*\]", line):
             continue
 
-        if current_site is None:
-            print(
-                f"  Line {lineno}: URL found outside a [site] heading — skipping.",
-                file=sys.stderr,
-            )
-            continue
-
-        # URL line, optional label after pipe
+        # Support optional "url | label" syntax
         if "|" in line:
             url, _, label = line.partition("|")
             url = url.strip()
-            label = label.strip() or auto_label(url, current_site)
+            label = label.strip()
         else:
             url = line
-            label = auto_label(url, current_site)
+            label = ""
 
         if not url.startswith("http"):
             print(f"  Line {lineno}: not a URL, skipping: {url!r}", file=sys.stderr)
             continue
 
-        entries.append({"label": label, "url": url, "site": current_site})
+        site = detect_site(url)
+        if not site:
+            print(
+                f"  Line {lineno}: unrecognised domain, skipping: {url!r}",
+                file=sys.stderr,
+            )
+            continue
 
+        entries.append({
+            "label": label or auto_label(url, site),
+            "url": url,
+            "site": site,
+        })
     return entries
 
 
 # ---------------------------------------------------------------------------
-# Firefox HTML bookmarks parser
+# Firefox HTML bookmarks parser  →  thrift-links.txt
 # ---------------------------------------------------------------------------
 
 class _FirefoxParser(HTMLParser):
-    """Minimal Firefox bookmarks HTML parser."""
+    """Extracts HREF attributes from a Firefox bookmarks HTML export."""
 
-    def __init__(self, folder_filter: str | None):
+    def __init__(self):
         super().__init__()
-        self._folder_filter = folder_filter.lower().strip() if folder_filter else None
-        self._in_target = self._folder_filter is None  # no filter → accept all
-        self._depth = 0
-        self._target_depth: int | None = None
-        self._pending_folder: list[str] = []
-        self._pending_href: str | None = None
-        self._pending_title: list[str] = []
-        self.entries: list[dict] = []
+        self.urls: list[str] = []
 
     def handle_starttag(self, tag, attrs):
-        attrs_d = dict(attrs)
-        if tag == "dl":
-            self._depth += 1
-        elif tag == "h3":
-            self._pending_folder = []
-        elif tag == "a":
-            self._pending_href = attrs_d.get("href")
-            self._pending_title = []
-
-    def handle_endtag(self, tag):
-        if tag == "dl":
-            # Leaving the target folder depth → stop collecting
-            if self._target_depth is not None and self._depth == self._target_depth:
-                self._in_target = False
-                self._target_depth = None
-            self._depth -= 1
-        elif tag == "h3":
-            name = "".join(self._pending_folder).strip()
-            if self._folder_filter and name.lower() == self._folder_filter:
-                self._in_target = True
-                self._target_depth = self._depth + 1  # the <dl> that follows
-            self._pending_folder = []
-        elif tag == "a":
-            if self._in_target and self._pending_href:
-                url = self._pending_href
-                title = "".join(self._pending_title).strip()
-                site = detect_site(url)
-                if site:
-                    self.entries.append(
-                        {
-                            "label": title or auto_label(url, site),
-                            "url": url,
-                            "site": site,
-                        }
-                    )
-            self._pending_href = None
-            self._pending_title = []
-
-    def handle_data(self, data):
-        if self._pending_href is not None:
-            self._pending_title.append(data)
-        elif self._pending_folder is not None:
-            self._pending_folder.append(data)
+        if tag == "a":
+            for name, value in attrs:
+                if name == "href" and value and value.startswith("http"):
+                    self.urls.append(value)
 
 
-def parse_firefox_html(path: Path, folder: str | None) -> list[dict]:
-    """Parse a Firefox bookmarks HTML export file."""
-    parser = _FirefoxParser(folder)
-    parser.feed(path.read_text(encoding="utf-8"))
-    return parser.entries
+def convert_firefox_html(html_path: Path, out_path: Path):
+    """Strip a Firefox bookmarks HTML file down to a clean thrift-links.txt.
+
+    Only URLs whose domains match a known site are written.
+    URLs are grouped under [site] headings, sorted by SITE_ORDER.
+    """
+    parser = _FirefoxParser()
+    parser.feed(html_path.read_text(encoding="utf-8"))
+
+    groups: dict[str, list[str]] = {site: [] for site in SITE_ORDER}
+    skipped = 0
+    for url in parser.urls:
+        site = detect_site(url)
+        if site:
+            groups[site].append(url)
+        else:
+            skipped += 1
+
+    total = sum(len(v) for v in groups.values())
+    print(f"  Found {total} matching URL(s) ({skipped} skipped — unrecognised domain)")
+
+    lines = [
+        "# thrift-links.txt — generated from Firefox bookmarks export",
+        "# Edit freely. Import with:  python import_links.py thrift-links.txt",
+        "",
+    ]
+    for site in SITE_ORDER:
+        if groups[site]:
+            lines.append(f"[{site}]")
+            lines.extend(groups[site])
+            lines.append("")
+
+    out_path.write_text("\n".join(lines), encoding="utf-8")
+    print(f"  Written to {out_path}")
+
+
+# ---------------------------------------------------------------------------
+# thrift-links.txt append  (used by api.py save-link endpoint)
+# ---------------------------------------------------------------------------
+
+def append_to_thrift_links(links_path: Path, url: str, site: str) -> bool:
+    """Append a URL to thrift-links.txt under the correct [site] heading.
+
+    Returns True if written, False if the URL was already present.
+    """
+    text = links_path.read_text(encoding="utf-8") if links_path.exists() else ""
+
+    # Duplicate check
+    if url in text:
+        return False
+
+    lines = text.splitlines()
+
+    heading = f"[{site}]"
+    # Find the last line of the existing section for this site
+    insert_after = None
+    in_section = False
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped == heading:
+            in_section = True
+            insert_after = i
+        elif in_section:
+            if stripped.startswith("http"):
+                insert_after = i
+            elif re.fullmatch(r"\[[^\]]*\]", stripped):
+                # Hit the next section — stop
+                break
+
+    if insert_after is not None:
+        # Insert URL after the last URL in the existing section
+        lines.insert(insert_after + 1, url)
+    else:
+        # Section doesn't exist — append at end
+        if lines and lines[-1].strip():
+            lines.append("")
+        lines.append(heading)
+        lines.append(url)
+        lines.append("")
+
+    links_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return True
 
 
 # ---------------------------------------------------------------------------
@@ -217,14 +255,32 @@ def load_config(config_path: Path) -> dict:
         return json.load(f)
 
 
+def sort_searches_by_site(searches: list[dict]) -> list[dict]:
+    """Return searches sorted by site in SITE_ORDER, preserving relative order."""
+    groups: dict[str, list[dict]] = {site: [] for site in SITE_ORDER}
+    other: list[dict] = []
+    for entry in searches:
+        site = entry.get("site", "")
+        if site in groups:
+            groups[site].append(entry)
+        else:
+            other.append(entry)
+    result = []
+    for site in SITE_ORDER:
+        result.extend(groups[site])
+    result.extend(other)
+    return result
+
+
 def save_config(config: dict, config_path: Path):
+    config["searches"] = sort_searches_by_site(config.get("searches", []))
     with open(config_path, "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2, ensure_ascii=False)
         f.write("\n")
 
 
 def merge_entries(config: dict, new_entries: list[dict]) -> tuple[int, int]:
-    """Add new_entries to config['searches'], skipping exact URL duplicates."""
+    """Add new_entries to config['searches'], skipping URL duplicates."""
     existing_urls = {s["url"] for s in config.setdefault("searches", [])}
     added = skipped = 0
     for entry in new_entries:
@@ -245,30 +301,36 @@ def merge_entries(config: dict, new_entries: list[dict]) -> tuple[int, int]:
 
 def main():
     ap = argparse.ArgumentParser(
-        description="Bulk-import search URLs into config.json.",
+        description="Import search URLs into config.json.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
             "Examples:\n"
-            "  python import_links.py searches.txt\n"
-            "  py     import_links.py searches.txt\n\n"
-            "  python import_links.py --firefox ~/bookmarks.html\n"
-            "  python import_links.py --firefox ~/bookmarks.html --folder \"Thrift Searches\"\n"
+            "  python import_links.py thrift-links.txt\n"
+            "  py     import_links.py thrift-links.txt\n\n"
+            "  # Convert a Firefox bookmarks HTML export first:\n"
+            "  python import_links.py --convert bookmarks.html\n"
+            "  python import_links.py thrift-links.txt\n"
         ),
     )
     ap.add_argument(
         "txt_file",
         nargs="?",
-        help="Path to a searches TXT file (see searches.txt.example).",
+        default="thrift-links.txt",
+        help="Path to thrift-links.txt (default: thrift-links.txt).",
     )
     ap.add_argument(
-        "--firefox",
+        "--convert",
         metavar="HTML_FILE",
-        help="Firefox bookmarks HTML export file.",
+        help=(
+            "Convert a Firefox bookmarks HTML export to thrift-links.txt "
+            "(strips all HTML cruft, keeps only URLs for known sites)."
+        ),
     )
     ap.add_argument(
-        "--folder",
-        metavar="FOLDER_NAME",
-        help="Only import bookmarks from this Firefox folder (case-insensitive).",
+        "--output",
+        metavar="PATH",
+        default="thrift-links.txt",
+        help="Output path for --convert (default: thrift-links.txt).",
     )
     ap.add_argument(
         "--config",
@@ -278,35 +340,43 @@ def main():
     )
     args = ap.parse_args()
 
-    if not args.txt_file and not args.firefox:
-        ap.error("Provide a TXT file or use --firefox <bookmarks.html>")
+    # --convert: Firefox HTML → thrift-links.txt
+    if args.convert:
+        html_path = Path(args.convert)
+        if not html_path.exists():
+            sys.exit(f"ERROR: File not found: {html_path}")
+        out_path = Path(args.output)
+        print(f"Converting {html_path} → {out_path}")
+        convert_firefox_html(html_path, out_path)
+        print("\nDone. Review thrift-links.txt, then run:")
+        print(f"  python import_links.py {out_path}")
+        return
+
+    # Import from thrift-links.txt
+    txt_path = Path(args.txt_file)
+    if not txt_path.exists():
+        sys.exit(
+            f"ERROR: {txt_path} not found.\n"
+            "Create it manually, run --convert on a Firefox export, or\n"
+            "use the Thrift Tracker Firefox extension to populate it."
+        )
+
+    print(f"Parsing: {txt_path}")
+    entries = parse_txt(txt_path)
+
+    if not entries:
+        print("No valid URLs found. Nothing to import.")
+        return
 
     config_path = Path(args.config)
     config = load_config(config_path)
-
-    if args.firefox:
-        ff_path = Path(args.firefox)
-        if not ff_path.exists():
-            sys.exit(f"ERROR: Firefox bookmarks file not found: {ff_path}")
-        print(f"Parsing Firefox export: {ff_path}")
-        if args.folder:
-            print(f"  Folder filter: '{args.folder}'")
-        entries = parse_firefox_html(ff_path, args.folder)
-    else:
-        txt_path = Path(args.txt_file)
-        if not txt_path.exists():
-            sys.exit(f"ERROR: File not found: {txt_path}")
-        print(f"Parsing: {txt_path}")
-        entries = parse_txt(txt_path)
-
-    if not entries:
-        print("No valid entries found. Nothing to import.")
-        return
 
     print(f"\nFound {len(entries)} URL(s). Merging into {config_path}…\n")
     added, skipped = merge_entries(config, entries)
     save_config(config, config_path)
     print(f"\nDone — {added} added, {skipped} skipped (already present).")
+    if added:
+        print("Entries in config.json are now sorted: vinted → depop → ebay → poshmark.")
 
 
 if __name__ == "__main__":
