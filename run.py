@@ -23,8 +23,10 @@ scheduler.start_scheduler(config)
 # ---------------------------------------------------------------------------
 # Startup banner
 # ---------------------------------------------------------------------------
+port = config.get("port", 5000)
+
 print("==========================================")
-print(" Thrift Tracker running at http://127.0.0.1:5000")
+print(f" Thrift Tracker running at http://127.0.0.1:{port}")
 print(" Press Ctrl+C to stop.")
 print("==========================================")
 
@@ -33,4 +35,4 @@ print("==========================================")
 # ---------------------------------------------------------------------------
 from thrift_tracker.api import app
 
-app.run(host="127.0.0.1", port=5000, debug=False, use_reloader=False)
+app.run(host="127.0.0.1", port=port, debug=False, use_reloader=False)
