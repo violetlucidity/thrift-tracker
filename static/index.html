@@ -17,6 +17,17 @@
 
   <div id="status-bar">Loading status…</div>
 
+  <div id="filter-bar">
+    <input  id="f-keyword"   type="search"  placeholder="Search titles &amp; descriptions…" />
+    <select id="f-label"     multiple><option value="">All searches</option></select>
+    <select id="f-size"      multiple><option value="">All sizes</option></select>
+    <select id="f-brand"     multiple><option value="">All brands</option></select>
+    <select id="f-condition" multiple><option value="">All conditions</option></select>
+    <input  id="f-price-max" type="number"  placeholder="Max price" min="0" step="0.01" />
+    <button class="btn-secondary" id="btn-clear-filters">Clear</button>
+    <span   id="filter-count"></span>
+  </div>
+
   <div id="popup-warning" hidden>
     <span>Allow popups for localhost to open multiple tabs at once.</span>
     <button class="close-btn" id="btn-close-warning">&times;</button>

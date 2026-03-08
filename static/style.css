@@ -55,6 +55,47 @@ header h1 {
 }
 
 /* ----------------------------------------------------------
+   Filter bar
+   ---------------------------------------------------------- */
+#filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f9fbfa;
+  align-items: center;
+}
+
+#filter-bar input[type="search"],
+#filter-bar input[type="number"] {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-family: inherit;
+}
+
+#filter-bar input[type="search"] { min-width: 200px; }
+#filter-bar input[type="number"] { width: 90px; }
+
+#filter-bar select {
+  padding: 0.3rem 0.4rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  min-width: 110px;
+  max-height: 80px;
+}
+
+#filter-count {
+  font-size: 0.8rem;
+  color: #666;
+  margin-left: auto;
+}
+
+/* ----------------------------------------------------------
    Popup warning banner
    ---------------------------------------------------------- */
 #popup-warning {
@@ -279,5 +320,19 @@ button:disabled {
   .header-actions button {
     font-size: 0.8rem;
     padding: 0.4rem 0.7rem;
+  }
+
+  #filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #filter-bar input[type="search"] {
+    min-width: unset;
+    width: 100%;
+  }
+
+  #filter-count {
+    margin-left: 0;
   }
 }

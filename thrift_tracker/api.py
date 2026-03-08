@@ -65,9 +65,43 @@ def static_files(filename):
 
 @app.route("/api/listings")
 def get_listings():
+    from thrift_tracker.filters import apply_filters
     max_age_days = int(request.args.get("max_age_days", config.get("max_age_days", 30)))
     listings = db.get_new_listings(max_age_days=max_age_days)
+
+    rules = {}
+    if kw := request.args.get("keyword", "").strip():
+        rules["keyword"] = kw
+    if sz := request.args.get("sizes", "").strip():
+        rules["sizes"] = [s.strip() for s in sz.split(",") if s.strip()]
+    if br := request.args.get("brands", "").strip():
+        rules["brands"] = [b.strip() for b in br.split(",") if b.strip()]
+    if co := request.args.get("conditions", "").strip():
+        rules["conditions"] = [c.strip() for c in co.split(",") if c.strip()]
+    if pm := request.args.get("price_max", "").strip():
+        try:
+            rules["price_max"] = float(pm)
+        except ValueError:
+            pass
+    if lb := request.args.get("label", "").strip():
+        rules["label"] = lb
+
+    if rules:
+        listings = apply_filters(listings, rules)
+
     return jsonify(listings)
+
+
+@app.route("/api/filter-options")
+def filter_options():
+    max_age_days = config.get("max_age_days", 30)
+    listings = db.get_new_listings(max_age_days=max_age_days)
+    sizes      = sorted({l["size"]      for l in listings if l.get("size")})
+    brands     = sorted({l["brand"]     for l in listings if l.get("brand")})
+    conditions = sorted({l["condition"] for l in listings if l.get("condition")})
+    labels     = sorted({l["label"]     for l in listings if l.get("label")})
+    return jsonify({"sizes": sizes, "brands": brands,
+                    "conditions": conditions, "labels": labels})
 
 
 @app.route("/api/listings/reviewed", methods=["POST"])

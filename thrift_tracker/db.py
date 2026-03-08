@@ -10,6 +10,20 @@ def _get_conn():
     return conn
 
 
+def _migrate(conn):
+    """Add enrichment columns if they don't exist yet."""
+    for col, typedef in [
+        ("description", "TEXT"),
+        ("brand",       "TEXT"),
+        ("condition",   "TEXT"),
+        ("enriched",    "INTEGER DEFAULT 0"),
+    ]:
+        try:
+            conn.execute(f"ALTER TABLE listings ADD COLUMN {col} {typedef}")
+        except Exception:
+            pass  # column already exists
+
+
 def init_db():
     """Create tables if they do not exist. Safe to call multiple times."""
     conn = _get_conn()
@@ -37,6 +51,8 @@ def init_db():
                 new_count   INTEGER
             );
         """)
+        conn.commit()
+        _migrate(conn)
         conn.commit()
     finally:
         conn.close()
@@ -128,6 +144,35 @@ def get_last_run() -> dict | None:
             "SELECT * FROM runs ORDER BY id DESC LIMIT 1"
         ).fetchone()
         return dict(row) if row else None
+    finally:
+        conn.close()
+
+
+def get_unenriched_listings(limit: int = 60) -> list[dict]:
+    """Return up to `limit` listings where enriched = 0, oldest first."""
+    conn = _get_conn()
+    try:
+        rows = conn.execute(
+            "SELECT * FROM listings WHERE enriched = 0 ORDER BY id ASC LIMIT ?",
+            (limit,),
+        ).fetchall()
+        return [dict(row) for row in rows]
+    finally:
+        conn.close()
+
+
+def update_enrichment(db_id: int, description: str | None,
+                      brand: str | None, condition: str | None):
+    """Set description, brand, condition and mark enriched=1 for a listing."""
+    conn = _get_conn()
+    try:
+        conn.execute(
+            """UPDATE listings
+               SET description = ?, brand = ?, condition = ?, enriched = 1
+               WHERE id = ?""",
+            (description, brand, condition, db_id),
+        )
+        conn.commit()
     finally:
         conn.close()
 
