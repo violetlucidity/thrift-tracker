@@ -55,6 +55,43 @@ header h1 {
 }
 
 /* ----------------------------------------------------------
+   Site filter tabs
+   ---------------------------------------------------------- */
+#site-tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #e0e0e0;
+  flex-wrap: wrap;
+}
+
+#site-tabs[hidden] {
+  display: none;
+}
+
+.tab-btn {
+  background: transparent;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  padding: 0.3rem 0.9rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: #555;
+  transition: all 0.15s;
+}
+
+.tab-btn:hover {
+  border-color: #2d6a4f;
+  color: #2d6a4f;
+}
+
+.tab-btn.active {
+  background: #2d6a4f;
+  border-color: #2d6a4f;
+  color: #ffffff;
+}
+
+/* ----------------------------------------------------------
    Popup warning banner
    ---------------------------------------------------------- */
 #popup-warning {
@@ -170,6 +207,12 @@ header h1 {
   font-size: 0.75rem;
   color: #2d6a4f;
   font-weight: 600;
+  line-height: 1.5;
+}
+
+.listing-label-site {
+  font-weight: 400;
+  color: #888;
 }
 
 .listing-info a {
