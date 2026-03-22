@@ -1,5 +1,5 @@
 # ThriftTracker Machine Reference Guide (MRG)
-**Last updated:** 2026Mar22-1200
+**Last updated:** 2026Mar22-1430
 
 > Token-efficient reference. Read this instead of source files where possible.
 
@@ -7,9 +7,9 @@
 
 ## Entry Point: `run.py`
 - Loads `config.json` → exits with message if missing
-- Prompts user for port (int, default 5000)
+- Optional CLI port arg: `py run.py 5001` (default 5000 if omitted or invalid)
 - Calls `db.init_db()`, `scheduler.start_scheduler(config)`
-- Runs `app.run(host="127.0.0.1", port=port, debug=False, use_reloader=False)`
+- Prints startup banner with resolved URL, then calls `app.run(host="127.0.0.1", port=port, debug=False, use_reloader=False)`
 
 ## Flask API: `thrift_tracker/api.py`
 | Route | Method | Purpose |
@@ -72,7 +72,7 @@
 ## Key Files at a Glance
 | File | Purpose |
 |---|---|
-| `run.py` | Start app; port prompt |
+| `run.py` | Start app; optional port arg |
 | `thrift_tracker/api.py` | Flask routes |
 | `thrift_tracker/db.py` | SQLite layer |
 | `thrift_tracker/runner.py` | Scrape orchestration |

@@ -120,3 +120,9 @@ These three notification types (plus the project label context, the runner integ
 - No stray debug print() statements found.
 
 ---
+
+## Session — Port Selection & Merge Bug (2026-Mar-22)
+**Status:** Completed
+**Notes:** Added optional CLI port selection to `run.py` (`py run.py 5001`, default 5000). After merging the PR into GitHub main, the feature silently failed: a second `port = config.get("port", 5000)` assignment from a pre-existing branch version survived the merge and overwrote the `sys.argv` value at runtime. Identified by inspecting the full file output; offending line removed. MRG updated. `PORT_SELECT.md` and `DEBUG_DIAGNOSIS_LESSONS.md` added to Claude Admin Docs.
+
+---
