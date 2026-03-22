@@ -13,14 +13,14 @@ except FileNotFoundError:
     sys.exit(1)
 
 # ---------------------------------------------------------------------------
-# Port selection
+# Port selection  (optional first argument: py run.py 5001)
 # ---------------------------------------------------------------------------
-try:
-    raw = input("Enter port to run on [default: 5000]: ")
-    digits = ''.join(c for c in raw if c.isdigit())
-    port = int(digits) if digits else 5000
-except (ValueError, EOFError):
-    port = 5000
+port = 5000
+if len(sys.argv) > 1:
+    try:
+        port = int(sys.argv[1])
+    except ValueError:
+        print(f"WARNING: Invalid port '{sys.argv[1]}', using default 5000.")
 
 # ---------------------------------------------------------------------------
 # Initialise DB and scheduler

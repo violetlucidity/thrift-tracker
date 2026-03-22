@@ -1,5 +1,5 @@
 # COMMANDS — Thrift Tracker
-**Last updated:** 2026Mar22-1200
+**Last updated:** 2026Mar22-1400
 
 ---
 
@@ -24,9 +24,14 @@ copy config.json.example config.json
 
 ## Running the Application
 
-Start Thrift Tracker (prompts for port, default 5000):
+Start Thrift Tracker on the default port (5000):
 ```
 py run.py
+```
+
+Start on a custom port:
+```
+py run.py 5001
 ```
 
 ---
