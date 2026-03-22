@@ -1,5 +1,5 @@
 # ThriftTracker Narrative Summary
-**Last updated:** 2026Mar22-1200
+**Last updated:** 2026Mar22-1400
 
 ---
 
@@ -14,7 +14,7 @@ Thrift Tracker is a locally-run web application that periodically scrapes a user
 ### 1. Entry Point — `run.py`
 The script you run to start the application. It:
 - Loads `config.json` (exits with a clear error if the file is missing)
-- Prompts the user to choose a port (defaults to 5000)
+- Reads an optional port from the first CLI argument (defaults to 5000)
 - Initialises the SQLite database
 - Starts the APScheduler background scheduler
 - Launches the Flask web server
@@ -103,7 +103,10 @@ py import_links.py thrift-links.txt
 ```
 py run.py
 ```
-When prompted, enter a port number (or press Enter to use the default, 5000).
+To use a custom port, pass it as the first argument:
+```
+py run.py 5001
+```
 
 ### Step 5 — Open the UI
 Navigate to `http://127.0.0.1:<port>` in your browser.
