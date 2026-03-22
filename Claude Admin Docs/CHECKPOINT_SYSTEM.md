@@ -11,7 +11,7 @@
 
 | Phrase | Action | What It Does |
 |--------|--------|--------------|
-| **"CHECKPOINT: [name]"** | Save state | Marks current discussion point for return |
+| **"CHECKPOINT: [name]"** | Save state | Marks current discussion point for return | If in Claude Code, writes a 'CHECKPOINT-' file with updated timestamp according to PROJECT_DOCUMENTATION.MD
 | **"DETOUR"** or **"SIDE QUEST"** | Branch off | Notes we're leaving main thread |
 | **"RETURN TO CHECKPOINT"** | Resume | Goes back to marked point |
 | **"SHOW CHECKPOINTS"** | List | Shows all saved checkpoints |
