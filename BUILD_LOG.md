@@ -121,6 +121,13 @@ These three notification types (plus the project label context, the runner integ
 
 ---
 
+## Session — Listing Enrichment, Filter Engine & UI Polish (2026-Mar-22, earlier)
+**Status:** Completed
+**Commits:** `51b00a2`, `7993258`, `0a98d6d`, `2fb4a12`
+**Notes:** Four features landed in this session. (1) **Listing enrichment** — DB migration added `description`, `brand`, `condition`, `enriched` columns; `thrift_tracker/scraper/detail.py` added site-specific Playwright detail-page scrapers for all four platforms; `runner.py` gained `enrich_new_listings()` to visit detail pages after each scrape run. (2) **Filter engine** — `thrift_tracker/filters.py` added `apply_filters()` supporting keyword, size, brand, condition, price_max, and label rules; `/api/listings` now accepts these as query params; new `/api/filter-options` endpoint returns distinct values for UI dropdowns; filter bar added to `index.html` and wired in `app.js` with debounced inputs and a Clear button. (3) **Port via config** — `config.json` gained an optional `"port"` key as an alternative to the CLI argument. (4) **UI polish** — listing cards now show the config label in green and the site name in muted grey on separate lines (`app.js` + `style.css`); Poshmark scraper fixed to wait for `networkidle` so URL filter params apply before scraping, and narrowed card selector to avoid picking up recommendation cards; per-site tab bar (All / Vinted / Depop / eBay / Poshmark) added, appearing only when listings from multiple sites are present.
+
+---
+
 ## Session — Port Selection & Merge Bug (2026-Mar-22)
 **Status:** Completed
 **Notes:** Added optional CLI port selection to `run.py` (`py run.py 5001`, default 5000). After merging the PR into GitHub main, the feature silently failed: a second `port = config.get("port", 5000)` assignment from a pre-existing branch version survived the merge and overwrote the `sys.argv` value at runtime. Identified by inspecting the full file output; offending line removed. MRG updated. `PORT_SELECT.md` and `DEBUG_DIAGNOSIS_LESSONS.md` added to Claude Admin Docs.
