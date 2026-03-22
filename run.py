@@ -13,6 +13,16 @@ except FileNotFoundError:
     sys.exit(1)
 
 # ---------------------------------------------------------------------------
+# Port selection
+# ---------------------------------------------------------------------------
+try:
+    port_input = input("Enter port to run on [default: 5000]: ").strip()
+    port = int(port_input) if port_input else 5000
+except ValueError:
+    print(f"Invalid port '{port_input}', using default 5000.")
+    port = 5000
+
+# ---------------------------------------------------------------------------
 # Initialise DB and scheduler
 # ---------------------------------------------------------------------------
 from thrift_tracker import db, scheduler
