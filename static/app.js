@@ -2,6 +2,7 @@ let listings = [];
 let selected = new Set();
 let lastRunId = null;
 let pollInterval = null;
+let activeSite = 'all';
 
 // ---------------------------------------------------------------------------
 // Data fetching
@@ -90,16 +91,57 @@ function openSelected() {
 // Rendering
 // ---------------------------------------------------------------------------
 
+function renderTabs() {
+  const tabBar = document.getElementById('site-tabs');
+  const sites = [...new Set(listings.map(l => l.site).filter(Boolean))].sort();
+
+  // Only show tabs when there are listings from more than one site
+  if (sites.length <= 1) {
+    tabBar.hidden = true;
+    return;
+  }
+
+  // If the active site was filtered away (e.g. all reviewed), fall back to All
+  if (activeSite !== 'all' && !sites.includes(activeSite)) {
+    activeSite = 'all';
+  }
+
+  tabBar.hidden = false;
+  tabBar.innerHTML = '';
+
+  const allBtn = document.createElement('button');
+  allBtn.textContent = `All (${listings.length})`;
+  allBtn.className = 'tab-btn' + (activeSite === 'all' ? ' active' : '');
+  allBtn.addEventListener('click', () => { activeSite = 'all'; renderListings(); });
+  tabBar.appendChild(allBtn);
+
+  for (const site of sites) {
+    const count = listings.filter(l => l.site === site).length;
+    const label = site.charAt(0).toUpperCase() + site.slice(1);
+    const btn = document.createElement('button');
+    btn.textContent = `${label} (${count})`;
+    btn.className = 'tab-btn' + (activeSite === site ? ' active' : '');
+    btn.addEventListener('click', () => { activeSite = site; renderListings(); });
+    tabBar.appendChild(btn);
+  }
+}
+
 function renderListings() {
   const container = document.getElementById('listings-container');
   const emptyState = document.getElementById('empty-state');
   container.innerHTML = '';
 
-  if (listings.length === 0) {
+  renderTabs();
+
+  const visible = activeSite === 'all'
+    ? listings
+    : listings.filter(l => l.site === activeSite);
+
+  if (visible.length === 0) {
     emptyState.hidden = false;
   } else {
     emptyState.hidden = true;
-    for (const listing of listings) {
+    for (const listing of visible) {
       const card = createCard(listing);
       container.appendChild(card);
     }

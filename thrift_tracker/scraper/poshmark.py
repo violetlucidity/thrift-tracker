@@ -3,9 +3,9 @@ import re
 from .base import BaseScraper
 
 # Selector verified 2025-01-01 against poshmark.com search page.
-# Listing tiles use div[data-et-name="listing"] historically; the results
-# container also uses <div> with class containing "card".
-CARD_SELECTOR = 'div[data-et-name="listing"], .cards-grid .card'
+# Using only the semantic data-et-name attribute to avoid picking up
+# recommended/similar-item cards that use generic card class names.
+CARD_SELECTOR = 'div[data-et-name="listing"]'
 LOGIN_SELECTOR = '[data-test="login-modal"], .modal--login, form[action*="login"]'
 
 
@@ -16,7 +16,18 @@ class PoshmarkScraper(BaseScraper):
         pw, browser, page = None, None, None
         try:
             pw, browser, page = self.launch_browser()
-            page.goto(self.config["url"], wait_until="domcontentloaded", timeout=30000)
+            # Use "load" so the page and its scripts are fully initialised before
+            # we proceed. Poshmark is a React SPA: URL filter params are applied
+            # client-side after the initial HTML is parsed, so domcontentloaded
+            # fires too early and returns pre-filter results.
+            page.goto(self.config["url"], wait_until="load", timeout=30000)
+
+            # Wait for React + XHR filter round-trip to complete. Fail silently
+            # so pages with background keep-alive requests don't block us.
+            try:
+                page.wait_for_load_state("networkidle", timeout=10000)
+            except Exception:
+                pass
 
             # Check for login prompt / modal
             try:
