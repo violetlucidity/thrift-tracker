@@ -207,6 +207,12 @@ header h1 {
   font-size: 0.75rem;
   color: #2d6a4f;
   font-weight: 600;
+  line-height: 1.5;
+}
+
+.listing-label-site {
+  font-weight: 400;
+  color: #888;
 }
 
 .listing-info a {

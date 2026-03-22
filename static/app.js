@@ -206,7 +206,10 @@ function createCard(listing) {
 
   const label = document.createElement('span');
   label.className = 'listing-label';
-  label.textContent = listing.label || '';
+  const siteName = listing.site
+    ? listing.site.charAt(0).toUpperCase() + listing.site.slice(1)
+    : '';
+  label.innerHTML = `${listing.label || ''}<br><span class="listing-label-site">${siteName}</span>`;
   info.appendChild(label);
 
   const link = document.createElement('a');
