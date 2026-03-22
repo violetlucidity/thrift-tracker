@@ -15,7 +15,6 @@ except FileNotFoundError:
 # ---------------------------------------------------------------------------
 # Port selection  (optional first argument: py run.py 5001)
 # ---------------------------------------------------------------------------
-print(f"[debug] sys.argv = {sys.argv}")
 port = 5000
 if len(sys.argv) > 1:
     try:
