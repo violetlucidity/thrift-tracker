@@ -33,6 +33,8 @@ scheduler.start_scheduler(config)
 # ---------------------------------------------------------------------------
 # Startup banner
 # ---------------------------------------------------------------------------
+port = config.get("port", 5000)
+
 print("==========================================")
 print(f" Thrift Tracker running at http://127.0.0.1:{port}")
 print(" Press Ctrl+C to stop.")
