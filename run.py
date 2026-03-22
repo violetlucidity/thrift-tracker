@@ -16,10 +16,10 @@ except FileNotFoundError:
 # Port selection
 # ---------------------------------------------------------------------------
 try:
-    port_input = input("Enter port to run on [default: 5000]: ").strip()
-    port = int(port_input) if port_input else 5000
-except ValueError:
-    print(f"Invalid port '{port_input}', using default 5000.")
+    raw = input("Enter port to run on [default: 5000]: ")
+    digits = ''.join(c for c in raw if c.isdigit())
+    port = int(digits) if digits else 5000
+except (ValueError, EOFError):
     port = 5000
 
 # ---------------------------------------------------------------------------
